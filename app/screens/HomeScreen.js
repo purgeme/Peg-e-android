@@ -1,36 +1,45 @@
-import React from 'react';
-import { ImageBackground, StyleSheet, View, Image, Text, Button } from 'react-native';
 
-const WelcomScreen = ({ navigation}) => {
+import React from 'react';
+import PropTypes from 'prop-types';
+import { ImageBackground, StyleSheet, View, Image, Text, Button, Pressable } from 'react-native';
+
+const HomeScreen = ({ navigation }) => {
 
     const image = require("../assets/BG.png")
     const logo = require("../assets/Peg-e2.png")
 
-    return (
+  return (
         <ImageBackground
-        // source={require("../assets/icon.png")}
         source={image}
         style={styles.background} >
             <View style={styles.logo_container} >
                 <Image style={styles.logo} source={logo} />
             </View>
-            <View style={styles.loginButton} >
-                <Text> Play </Text>
-                <Button
-                title="Test"
-                onPress={() => navigation.navigate('ProfileScreen')}
-                />
-            </View>
+            <Pressable
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('GameScreen')} >
+              <Text
+                // onPress={() => navigation.navigate('ProfileScreen')}
+              >
+                Test
+              </Text>
+            </Pressable>
             <View style={styles.registerButton} >
                 <Text> Options </Text>
             </View>
         </ImageBackground>
-    );
-}
-
-const ProfileScreen = ({ navigation, route }) => {
-  return <Text>This is s profile</Text>;
+  );
 };
+HomeScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
+
+HomeScreen.navigationOptions = {
+  headerShown: false,
+};
+
 const styles = StyleSheet.create({
     background: {
         flex: 1,
@@ -63,4 +72,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default WelcomScreen
+export default HomeScreen;

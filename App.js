@@ -1,10 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import {
-    View,
-  } from 'react-native';
-import WelcomScreen from './app/screens/WelcomScreen';
+import Navigation from "./app/screens/Navigator"
+
+// const App = () => {
+//   return (
+//     <NavigationContainer>
+//       {/* Rest of your app code */}
+//     </NavigationContainer>
+//   );
+// };
+
+// export default App;
 
 export default function App() {
-  return <WelcomScreen />;
+  return <Navigation />;
 }
