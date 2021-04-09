@@ -58,7 +58,7 @@ const GameScreen = ({ navigation, route }) => {
     <Text
       onPress={() => navigation.navigate('HomeScreen')}
       style={styles.loginButton}
-    >This is s profile</Text>
+    >This is a profile</Text>
     );
 };
 
