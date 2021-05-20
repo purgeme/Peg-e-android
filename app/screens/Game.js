@@ -1,107 +1,142 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { ImageBackground, StyleSheet, View, Image, Text, Button, Pressable } from 'react-native';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import {
+  ImageBackground,
+  StyleSheet,
+  View,
+  Image,
+  Text,
+  Button,
+  Pressable,
+} from "react-native";
 
-// This will be the buffer of moves that the player makes to make undoing a move possible.
-// The moves can be stored in a string containing the previous and next position of a ball.
-// It could also contain if a ball is removed, if it is removed, the automatically from
-// the next position.
-// Example: previous position in matrix: 2, 3; Next position in matrix: 5, 4; Ball removed: NILL;
-// => "2,3=5,4;0"
-// Example: previous position in matrix: 2, 3; Next position in matrix: 5, 4; Ball removed: at 5,4;
-// => "2,3=5,4;1"
-var moves = [];
+import CircleButton from "./circle_button";
+import Puzzle from "./puzzle";
 
-var len = 20; // The length of the side of the game square
-
-// Rather than passing a pixel value, it might be better to center it using flex and align style options
-var cent = [ 500, 500]; // The center of the square, to be the center of the screen probably
-
-// Use the moves buffer to undo a move
-function undoMove(){
-  return 0;
-}
-
-// Save the current move to the moves buffer
-function saveMove(){
-  return 0;
-}
-
-// This will calculate all the possible moves, useful for things like hints.
-function aposMoves(){
-  return 0;
-}
-
-// This will highlight all the positions that the player can move the current ball to if he/she is holding one.
-function sposMoves(){
-  return 0;
-}
-
-// This will find all the balls and their respective positions in the game.
-function findBalls(){
-  return 0;
-}
-
-// This is responsible to find all the holes in the game.
-function findHole(){
-  return 0;
-}
+import { difficulty } from "./variables";
+import { size } from "./variables";
+import { direction_s } from "./variables";
+import { selected_pos } from "./variables";
 
 const GameScreen = ({ navigation, route }) => {
+  var x = new Puzzle();
 
-  // Game square is basically the square in which there are smaller squares with each small
-  // square capable of holding a ball and a hole.
+  // Generate the puzzle board
+  var board = x.generate(10, difficulty);
 
+  function whenSelected(a, b) {
+    if (board[a][b] == 1) {
+      if (refs[a][b].current.state.is_selected == false) {
+        refs[selected_pos.x][selected_pos.y].current.whenPress();
+      }
+      selected_pos.x = a;
+      selected_pos.y = b;
+      for (let i in direction_s) {
+        var direction = direction_s[i];
+        var val = { x: direction.x + a, y: direction.y + b };
+        var nextval = { x: 2 * direction.x + a, y: 2 * direction.y + b };
+        if (board[val.x] != undefined && board[nextval.x] != undefined) {
+          if (board[val.x][val.y] == 1) {
+            if (board[nextval.x][nextval.y] == 0) {
+              var ishigh =
+                refs[nextval.x][nextval.y].current.state.is_highlighted;
+              refs[nextval.x][nextval.y].current.setState({
+                is_highlighted: !ishigh,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
 
-  return (
+  function whenhighPress(a, b) {
+    refs[selected_pos.x][selected_pos.y].current.setState({
+      val: 0,
+      is_selected: false,
+      is_highlighted: false,
+    });
+    var dx = (selected_pos.x - a) / 2;
+    var dy = (selected_pos.y - b) / 2;
+    refs[a + dx][b + dy].current.setState({
+      val: 0,
+      is_selected: false,
+      is_highlighted: false,
+    });
+  }
 
-    <Text
-      onPress={() => navigation.navigate('HomeScreen')}
-      style={styles.loginButton}
-    >This is a profile</Text>
+  var refs = new Array();
+
+  function initMat(mat, size) {
+    var size = size + 1;
+    for (var i = 0; i < size; i++) {
+      var x = new Array();
+      for (var j = 0; j < size; j++) {
+        x.push(React.createRef());
+      }
+      mat.push(x);
+    }
+    return mat;
+  }
+
+  refs = initMat(refs, size);
+
+  // Dynamically render the grid
+  var collist = [];
+  for (let i = 0; i < size; i++) {
+    var rowlist = [];
+    for (let t = 0; t < size; t++) {
+      rowlist.push(
+        <CircleButton
+          ref={refs[i][t]}
+          board={board}
+          x={i}
+          y={t}
+          val={board[i][t]}
+          key={t}
+          is_selected={false}
+          ret_selected={whenSelected}
+          ret_highlighted={whenhighPress}
+        />
+      );
+    }
+    collist.push(
+      <View style={styles.Row} key={i}>
+        {rowlist}
+      </View>
     );
+  }
+
+  return <View style={styles.background}>{collist}</View>;
 };
 
 const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    loginButton: {
-        width: "50%",
-        height: 70,
-        marginBottom: 100,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#00000055",
-    },
-    registerButton: {
-        width: "50%",
-        height: 70,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#4ecdc4aa",
-    },
-    logo: {
-        width: 150,
-        height: 150,
-    },
-    logo_container: {
-        position: "absolute",
-        alignItems: "center",
-        top: "10%",
-    },
-})
+  background: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#282a36",
+  },
+  Column: {
+    flexDirection: "column",
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  Row: {
+    flexDirection: "row",
+  },
+});
 
+// Hide the navbar
+// {{{
 GameScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired,
   }).isRequired,
 };
-
 GameScreen.navigationOptions = {
   headerShown: false,
 };
+// }}}
 
 export default GameScreen;
