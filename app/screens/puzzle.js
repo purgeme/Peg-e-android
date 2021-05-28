@@ -56,6 +56,12 @@ class Puzzle extends Component {
     return array;
   };
 
+  arrayRemove(arr, value) {
+    return arr.filter(function (ele) {
+      return ele != value;
+    });
+  }
+
   setHasPeg = (hole, value) => {
     this.board[hole.x][hole.y] = value ? 1 : 0;
   };
@@ -110,7 +116,7 @@ class Puzzle extends Component {
         if (tof) {
           jumped_hole = reval[1];
           end_hole = reval[2];
-          pegs.pop(start_hole);
+          pegs = this.arrayRemove(pegs, start_hole);
           pegs.push(jumped_hole);
           pegs.push(end_hole);
           break;

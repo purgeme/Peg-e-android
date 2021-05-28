@@ -84,6 +84,9 @@ const GameScreen = ({ navigation, route }) => {
 
     num_pegs_left -= 1;
     console.log(num_pegs_left);
+    if (num_pegs_left == 0) {
+      success();
+    }
     // Remove the previous two pegs
     refs[selected_pos.x][selected_pos.y].current.setState({
       val: 0,
@@ -99,6 +102,10 @@ const GameScreen = ({ navigation, route }) => {
       is_highlighted: false,
     });
     board[a + dx][b + dy] = 0;
+  }
+
+  function success() {
+    console.log("SUCCESS!!!");
   }
 
   var refs = new Array();
