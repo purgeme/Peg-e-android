@@ -32,12 +32,18 @@ class CircleButton extends Component {
   };
 
   whenPress = () => {
+    // Function to run when the circle is pressed
+
+    // Here is a function to deselect the previous one
     if (this.state.val == 1) {
-      this.props.ret_selected(this.state.x, this.state.y);
-      this.setState({ is_selected: !this.state.is_selected });
+      if (this.state.is_selected) {
+        this.props.ret_selected(this.state.x, this.state.y, false);
+      } else {
+        this.props.ret_selected(this.state.x, this.state.y, true);
+      }
     } else if (this.state.val == 0) {
       this.props.ret_highlighted(this.state.x, this.state.y);
-      this.setState({ is_highlighted: false, val: 1 });
+      this.setState({ is_highlighted: false, val: 1, is_selected: false });
     }
   };
 

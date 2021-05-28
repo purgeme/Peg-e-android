@@ -22,26 +22,51 @@ const GameScreen = ({ navigation, route }) => {
   var x = new Puzzle();
 
   // Generate the puzzle board
-  var board = x.generate(10, difficulty);
+  var tmp = x.generate(10, difficulty);
+  var board = tmp[0];
+  var num_pegs_left = tmp[1];
 
-  function whenSelected(a, b) {
-    if (board[a][b] == 1) {
-      if (refs[a][b].current.state.is_selected == false) {
-        refs[selected_pos.x][selected_pos.y].current.whenPress();
-      }
+  // Function to run when a peg is selected
+  function whenSelected(a, b, test) {
+    if (test) {
+      // Deselect the previous one
+      whenSelected(selected_pos.x, selected_pos.y, false);
       selected_pos.x = a;
       selected_pos.y = b;
+      // Select it
+      refs[a][b].current.setState({ is_selected: true });
+
+      // Highlight possible moves
       for (let i in direction_s) {
         var direction = direction_s[i];
         var val = { x: direction.x + a, y: direction.y + b };
         var nextval = { x: 2 * direction.x + a, y: 2 * direction.y + b };
+
         if (board[val.x] != undefined && board[nextval.x] != undefined) {
           if (board[val.x][val.y] == 1) {
             if (board[nextval.x][nextval.y] == 0) {
-              var ishigh =
-                refs[nextval.x][nextval.y].current.state.is_highlighted;
               refs[nextval.x][nextval.y].current.setState({
-                is_highlighted: !ishigh,
+                is_highlighted: true,
+              });
+            }
+          }
+        }
+      }
+    } else {
+      // Deselect it and unhighlight the moves
+      refs[a][b].current.setState({ is_selected: false });
+
+      // Highlight possible moves
+      for (let i in direction_s) {
+        var direction = direction_s[i];
+        var val = { x: direction.x + a, y: direction.y + b };
+        var nextval = { x: 2 * direction.x + a, y: 2 * direction.y + b };
+
+        if (board[val.x] != undefined && board[nextval.x] != undefined) {
+          if (board[val.x][val.y] == 1) {
+            if (board[nextval.x][nextval.y] == 0) {
+              refs[nextval.x][nextval.y].current.setState({
+                is_highlighted: false,
               });
             }
           }
@@ -51,11 +76,21 @@ const GameScreen = ({ navigation, route }) => {
   }
 
   function whenhighPress(a, b) {
+    // De select the previous one
+    whenSelected(selected_pos.x, selected_pos.y, false);
+
+    // Set the value of the current one to be 1 in the board
+    board[a][b] = 1;
+
+    num_pegs_left -= 1;
+    console.log(num_pegs_left);
+    // Remove the previous two pegs
     refs[selected_pos.x][selected_pos.y].current.setState({
       val: 0,
       is_selected: false,
       is_highlighted: false,
     });
+    board[selected_pos.x][selected_pos.y] = 0;
     var dx = (selected_pos.x - a) / 2;
     var dy = (selected_pos.y - b) / 2;
     refs[a + dx][b + dy].current.setState({
@@ -63,6 +98,7 @@ const GameScreen = ({ navigation, route }) => {
       is_selected: false,
       is_highlighted: false,
     });
+    board[a + dx][b + dy] = 0;
   }
 
   var refs = new Array();

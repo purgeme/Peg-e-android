@@ -1,18 +1,4 @@
 import React, { Component } from "react";
-import {
-  ImageBackground,
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  Button,
-  Pressable,
-  PanResponder,
-} from "react-native";
-import { diff } from "react-native-reanimated";
-import parseErrorStack from "react-native/Libraries/Core/Devtools/parseErrorStack";
-
-// import Point from './components'
 
 class Point {
   constructor() {
@@ -40,6 +26,7 @@ class Puzzle extends Component {
     ];
     this.board = new Array();
     this.num_pegs = 0;
+    this.total_pegs = 0;
   }
 
   initMat = (mat, size) => {
@@ -101,6 +88,7 @@ class Puzzle extends Component {
         this.setHasPeg(start_hole, false);
         this.setHasPeg(jumped_hole, true);
         this.setHasPeg(end_hole, true);
+        this.total_pegs += 1;
         return [true, jumped_hole, end_hole];
       }
     }
@@ -140,7 +128,7 @@ class Puzzle extends Component {
     var start = { x: this.num_pegs / 2, y: this.num_pegs / 2 };
     this.findMoves(start, this.num_pegs);
 
-    return this.board;
+    return [this.board, this.total_pegs];
   };
 }
 
