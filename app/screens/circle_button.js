@@ -42,8 +42,10 @@ class CircleButton extends Component {
         this.props.ret_selected(this.state.x, this.state.y, true);
       }
     } else if (this.state.val == 0) {
-      this.props.ret_highlighted(this.state.x, this.state.y);
-      this.setState({ is_highlighted: false, val: 1, is_selected: false });
+      if (this.state.is_highlighted) {
+        this.props.ret_highlighted(this.state.x, this.state.y);
+        this.setState({ is_highlighted: false, val: 1, is_selected: false });
+      }
     }
   };
 
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
     width: radius,
     height: radius,
     borderRadius: radius / 2,
-    backgroundColor: "#282f36",
+    backgroundColor: "#282a36",
     margin: margin,
   },
 });
