@@ -1,19 +1,7 @@
 import React, { Component } from "react";
-import {
-  ImageBackground,
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  Button,
-  Pressable,
-  PanResponder,
-} from "react-native";
-import { State, TouchableOpacity } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated";
+import { StyleSheet, View, Pressable } from "react-native";
 import { Dimensions } from "react-native";
 
-// The actual holes that the grid is made of
 import { difficulty } from "./variables";
 import { size } from "./variables";
 
@@ -24,7 +12,6 @@ class CircleButton extends Component {
     x: this.props.x,
     y: this.props.y,
     val: this.props.val,
-    // board: this.props.board,
     is_selected: this.props.is_selected,
     is_highlighted: this.props.is_highlighted,
     ret_selected: this.props.ret_selected,
@@ -50,7 +37,7 @@ class CircleButton extends Component {
   };
 
   render() {
-    const { x, y, is_selected, is_highlighted, board, val } = this.state;
+    const { x, y, is_selected, is_highlighted, val } = this.state;
     return (
       <Pressable
         onPress={() => {

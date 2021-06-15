@@ -23,10 +23,8 @@ const HomeScreen = ({ navigation }) => {
         style={styles.playButton}
         onPress={() => navigation.navigate("GameScreen")}
       >
-        <Text
-        // onPress={() => navigation.navigate('ProfileScreen')}
-        >
-          Test
+        <Text>
+          Play
         </Text>
       </Pressable>
       <View style={styles.registerButton}>
