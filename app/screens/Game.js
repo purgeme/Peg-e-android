@@ -1,9 +1,10 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState , BackHandler } from "react";
 import PropTypes from "prop-types";
 import {
   StyleSheet,
   View,
 } from "react-native";
+import { useFocusEffect } from 'react-navigation';
 
 import CircleButton from "./circle_button";
 import Puzzle from "./puzzle";
@@ -165,36 +166,53 @@ class Game extends Component {
 }
 
 const GameScreen = ({ navigation, route }) => {
+  const gref = React.createRef();
   var times = 0;
   const [game, setgame] = React.useState(newGame());
+  const opacity = useSharedValue(0);
+  opacity.value = withTiming(1, { duration: 2000, easing: Easing.ease });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (gref.current.num_pegs_left !== 0) {
+          console.log("Back is pressed!!!")
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+
+  // For whenever the screen is showed
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('didFocus', () => {
-      if (times !== 0)
+      if (times !== 0 && gref.current.num_pegs_left == 0)
       {
         setgame(newGame());
-        opacity.value = withTiming(1, { duration: 2000, easing: Easing.ease });
       }
       times++;
+      opacity.value = withTiming(1, { duration: 2500, easing: Easing.ease });
 
     });
 
     // Return the function to unsubscribe from the event so it gets removed on unmount
-    return unsubscribe;
+    // return unsubscribe;
   }, [navigation]);
 
   function newGame() {
+    const opctzero = () => {
+      opacity.value = 0
+    }
     var nkey = Math.random();
-    return <Game key={nkey} navigation={navigation} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
+    return <Game ref={gref} set_opacity={opctzero} key={nkey} navigation={navigation} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
   }
-
-  const opctzero = () => {
-    opacity.value = 0
-  }
-
-  const opacity = useSharedValue(0);
-
-  // Set the opacity value to animate between 0 and 1
-  opacity.value = withTiming(1, { duration: 2000, easing: Easing.ease });
 
   const style = useAnimatedStyle(() => ({
     opacity: opacity.value ,
@@ -206,16 +224,11 @@ const GameScreen = ({ navigation, route }) => {
     backgroundColor: "#262a36",
     justifyContent: "center",
   }), []);
-  console.log(opacity)
 
   return(
-    // <View>
-    //   {game}
-    // </View>
-    <View style={{ backgroundColor: "#282a36"}} >
+    <View style={{ position: "absolute", backgroundColor: "#282a36", top: 0, bottom: 0, left: 0, right: 0, alignItems: "center", justifyContent: "center"}} >
       <Animated.View style={style} >
-        <Game set_opacity={opctzero} key={Math.random()} navigation={navigation} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}>
-        </Game>
+        {game}
       </Animated.View>
     </View>
   )
