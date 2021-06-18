@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     width: radius,
     height: radius,
     borderRadius: radius / 2,
-    backgroundColor: "#282a36",
+    backgroundColor: "#28fa36",
     margin: margin,
   },
 });

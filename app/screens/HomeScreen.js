@@ -21,7 +21,7 @@ const HomeScreen = ({ navigation }) => {
       </View>
       <Pressable
         style={styles.playButton}
-        onPress={() => navigation.navigate("GameScreen")}
+        onPress={() => navigation.navigate("GameScreen", {button: "start"})}
       >
         <Text>
           Play

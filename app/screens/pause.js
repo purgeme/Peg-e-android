@@ -1,6 +1,6 @@
 // The screen shown when a puzzle is solved
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "react"; import PropTypes from "prop-types";
+import { CommonActions } from '@react-navigation/native';
 import {
   ImageBackground,
   StyleSheet,
@@ -17,10 +17,37 @@ const Pause = ({ navigation, route }) => {
           <View style={styles.success}>
             <Pressable
               style={styles.playButton}
-              onPress={() => navigation.navigate("GameScreen")}
+              // onPress={() => navigation.navigate("GameScreen", {button: "from pause resume"})}
+              onPress={() => {
+                // navigation.dispatch(CommonActions.setParams({button: "from pause resume"}))
+                navigation.goBack()
+                // navigation.navigate("GameScreen", {button: "from pause restart"})
+                // navigation.push("GameScreen", {button: "resume"})
+              }}
             >
               <Text style={styles.playButtontxt}>
                 Resume
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.playButton}
+              onPress={() => {
+                // navigation.dispatch(CommonActions.setParams({button: "from pause restart"}))
+                // navigation.pop()
+                navigation.push("GameScreen", {button: "restart"})
+                // navigation.navigate("GameScreen", {button: "from pause restart"})
+              }}
+            >
+              <Text style={styles.playButtontxt}>
+                Restart
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.playButton}
+              onPress={() => navigation.popToTop()}
+            >
+              <Text style={styles.playButtontxt}>
+                Quit
               </Text>
             </Pressable>
           </View>
@@ -36,7 +63,7 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#bd93f9",
+    backgroundColor: "#bd93f9aa",
     borderRadius: 6,
   },
   successtxt: {
@@ -50,6 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 70 / 3,
     justifyContent: "center",
     alignItems: "center",
+    margin: 10,
     backgroundColor: "#00000055",
   },
   playButtontxt: {

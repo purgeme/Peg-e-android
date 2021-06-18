@@ -10,6 +10,8 @@ import {
   Button,
   Pressable,
 } from "react-native";
+import { CommonActions } from '@react-navigation/native';
+import { StackActions } from '@react-navigation/native';
 
 import Animated, {
   Easing,
@@ -43,10 +45,24 @@ const Success = ({ navigation, route }) => {
               <Text style={styles.successtxt}>You win!!!</Text>
               <Pressable
                 style={styles.playButton}
-                onPress={() => navigation.navigate("GameScreen")}
+                // onPress={() => navigation.navigate("GameScreen", {button: 'from success restart'})}
+                onPress={() => {
+                  // navigation.dispatch({...CommonActions.setParams({ button: "from pause resume"}), source: route.params.pkey});
+                  // navigation.dispatch(StackActions.pop(1))
+                  // navigation.goBack()
+                  navigation.push("GameScreen", {button: "restart"})
+                }}
               >
                 <Text style={styles.playButtontxt}>
                   Restart
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.playButton}
+                onPress={() => navigation.popToTop()}
+              >
+                <Text style={styles.playButtontxt}>
+                  Quit
                 </Text>
               </Pressable>
             </Animated.View>
@@ -76,6 +92,7 @@ const styles = StyleSheet.create({
     borderRadius: 70 / 3,
     justifyContent: "center",
     alignItems: "center",
+    margin: 10,
     backgroundColor: "#00000055",
   },
   playButtontxt: {
