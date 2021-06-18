@@ -21,7 +21,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-const Success = ({ navigation, route }) => {
+const Failure = ({ navigation, route }) => {
 
   const opacity = useSharedValue(0);
   // Set the opacity value to animate between 0 and 1
@@ -42,7 +42,7 @@ const Success = ({ navigation, route }) => {
 
   return(
             <Animated.View style={style} >
-              <Text style={styles.successtxt}>You win!!!</Text>
+              <Text style={styles.successtxt}>Game Over!!!</Text>
               <Pressable
                 style={styles.playButton}
                 // onPress={() => navigation.navigate("GameScreen", {button: 'from success restart'})}
@@ -101,4 +101,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default Success
+export default Failure

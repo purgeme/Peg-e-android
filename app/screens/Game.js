@@ -39,6 +39,7 @@ class Game extends Component {
     this.tmp = x.generate(10, this.difficulty)
     this.board = this.tmp[0];
     this.num_pegs_left = this.tmp[1];
+    this.peg_positions = props.peg_positions;
     this.refers = new Array(this.size);
     this.refers = this.refMat(this.refers, this.size);
     this.direction_s = props.direction_s;
@@ -48,7 +49,7 @@ class Game extends Component {
       var rowlist = [];
       for (let t = 0; t < this.size; t++) {
         if ( this.board[i][t] == 1 ) {
-          this.props.peg_pos_push({ x: i, y: t});
+          this.peg_pos_push({ x: i, y: t});
         }
         rowlist.push(
           <CircleButton
@@ -84,25 +85,45 @@ class Game extends Component {
   }
 
   peg_pos_push = (obj) => {
-    console.log("Pushing: ")
-    console.log(obj)
-    peg_positions.push(obj);
+    // console.log("Pushing: ")
+    // console.log(obj)
+    this.peg_positions.push(obj);
+    // console.log(peg_positions)
   }
   peg_pos_pop = (obj) => {
     // peg_positions.push(obj);
-    console.log("Poping: ")
-    console.log(obj)
-    for( var i = 0; i < peg_positions.length; i++){
-        if ( peg_positions[i].x === obj.x && peg_positions[i].y == obj.y) {
-            peg_positions.splice(i, 1);
+    // console.log("Poping: ")
+    // console.log(obj)
+    for( var i = 0; i < this.peg_positions.length; i++){
+        if ( this.peg_positions[i].x === obj.x && this.peg_positions[i].y == obj.y) {
+            this.peg_positions.splice(i, 1);
             i--;
         }
     }
+    // console.log(this.peg_positions)
   }
 
   failCheck = () => {
     // Iterate over the peg_positions array ( first localize it ) and find if there is at least one move from at least on position in that array
     console.log("Fail checking")
+    for ( var u = 0; u < this.peg_positions.length; u++){
+      var start_hole = peg_positions[u];
+      for ( let i in this.direction_s){
+        var direction = this.direction_s[i];
+        var a1 = {x:0,y:0};
+        a1.x = direction.x + start_hole.x;
+        a1.y = direction.y + start_hole.y;
+        if ( this.board[a1.x][a1.y] == 1) {
+          var a2 = {x:0,y:0};
+          a2.x = direction.x*2 + start_hole.x;
+          a2.y = direction.y*2 + start_hole.y;
+          if ( this.board[a2.x][a2.y] == 0){
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   whenhighPress = (a, b) => {
@@ -110,7 +131,7 @@ class Game extends Component {
     this.whenSelected(this.selected_pos.x, this.selected_pos.y, false);
 
     // Set the value of the current one to be 1 in the board
-    this.props.peg_pos_push({ x: a, y: b })
+    this.peg_pos_push({ x: a, y: b })
     this.board[a][b] = 1;
 
     this.num_pegs_left -= 1;
@@ -127,7 +148,7 @@ class Game extends Component {
       is_selected: false,
       is_highlighted: false,
     });
-    this.props.peg_pos_pop({ x: this.selected_pos.x, y: this.selected_pos.y });
+    this.peg_pos_pop({ x: this.selected_pos.x, y: this.selected_pos.y });
     this.board[this.selected_pos.x][this.selected_pos.y] = 0;
     var dx = (this.selected_pos.x - a) / 2;
     var dy = (this.selected_pos.y - b) / 2;
@@ -136,8 +157,13 @@ class Game extends Component {
       is_selected: false,
       is_highlighted: false,
     });
-    this.props.peg_pos_pop({ x: a + dx, y: b + dy });
+    this.peg_pos_pop({ x: a + dx, y: b + dy });
     this.board[a + dx][b + dy] = 0;
+    if (this.failCheck() && this.num_pegs_left != 0){
+      console.log("FAILED!!")
+      this.props.set_opacity();
+      this.navigation.navigate("Failure");
+    }
   }
 
   whenSelected = (a, b, test ) => {
@@ -250,25 +276,25 @@ const GameScreen = ({ navigation, route }) => {
     const nnpegs = () => {
       npegs -= 1;
     }
-    const peg_pos_push = (obj) => {
-      console.log("Pushing: ")
-      console.log(obj)
-      peg_positions.push(obj);
-    }
-    const peg_pos_pop = (obj) => {
-      // peg_positions.push(obj);
-      console.log("Poping: ")
-      console.log(obj)
-      for( var i = 0; i < peg_positions.length; i++){
-          if ( peg_positions[i].x === obj.x && peg_positions[i].y == obj.y) {
-              peg_positions.splice(i, 1);
-              i--;
-          }
-      }
-      console.log(peg_positions)
-    }
+    // const peg_pos_push = (obj) => {
+    //   console.log("Pushing: ")
+    //   console.log(obj)
+    //   peg_positions.push(obj);
+    // }
+    // const peg_pos_pop = (obj) => {
+    //   // peg_positions.push(obj);
+    //   console.log("Poping: ")
+    //   console.log(obj)
+    //   for( var i = 0; i < peg_positions.length; i++){
+    //       if ( peg_positions[i].x === obj.x && peg_positions[i].y == obj.y) {
+    //           peg_positions.splice(i, 1);
+    //           i--;
+    //       }
+    //   }
+    //   console.log(peg_positions)
+    // }
     var nkey = Math.random();
-    return <Game nnpegs={nnpegs} peg_pos_pop={peg_pos_pop} peg_pos_push={peg_pos_push} set_opacity={opctzero} key={nkey} navigation={navigation} route={route} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
+    return <Game nnpegs={nnpegs} peg_positions={peg_positions} set_opacity={opctzero} key={nkey} navigation={navigation} route={route} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
   }
 
   const style = useAnimatedStyle(() => ({

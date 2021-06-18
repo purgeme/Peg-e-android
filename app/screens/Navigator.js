@@ -4,6 +4,7 @@ import React from 'react';
 import HomeScreen from './HomeScreen';
 import GameScreen from './Game';
 import Success from './success';
+import Failure from './failure';
 import Pause from './pause';
 
 const Stack = createStackNavigator();
@@ -32,6 +33,11 @@ export default function Navigator() {
         <Stack.Screen
           name="Success"
           component={Success}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Failure"
+          component={Failure}
           options={{headerShown: false}}
         />
       </Stack.Navigator>
