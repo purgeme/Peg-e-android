@@ -25,3 +25,4 @@ export { direction_s };
 export { selected_pos };
 export { num_pegs_left };
 export { peg_positions };
+export { steps };

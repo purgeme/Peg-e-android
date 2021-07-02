@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import {
   StyleSheet,
   View,
+  Text,
+  Pressable,
   BackHandler,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,6 +17,7 @@ import { size } from "./variables";
 import { direction_s } from "./variables";
 import { selected_pos } from "./variables";
 import { peg_positions } from "./variables";
+// import { steps } from "./variables";
 
 import Animated, {
   Easing,
@@ -40,6 +43,7 @@ class Game extends Component {
     this.board = this.tmp[0];
     this.num_pegs_left = this.tmp[1];
     this.peg_positions = props.peg_positions;
+    this.steps = new Array();
     this.refers = new Array(this.size);
     this.refers = this.refMat(this.refers, this.size);
     this.direction_s = props.direction_s;
@@ -85,27 +89,20 @@ class Game extends Component {
   }
 
   peg_pos_push = (obj) => {
-    // console.log("Pushing: ")
-    // console.log(obj)
     this.peg_positions.push(obj);
-    // console.log(peg_positions)
   }
   peg_pos_pop = (obj) => {
     // peg_positions.push(obj);
-    // console.log("Poping: ")
-    // console.log(obj)
     for( var i = 0; i < this.peg_positions.length; i++){
         if ( this.peg_positions[i].x === obj.x && this.peg_positions[i].y == obj.y) {
             this.peg_positions.splice(i, 1);
             i--;
         }
     }
-    // console.log(this.peg_positions)
   }
 
   failCheck = () => {
     // Iterate over the peg_positions array ( first localize it ) and find if there is at least one move from at least on position in that array
-    console.log("Fail checking")
     for ( var u = 0; u < this.peg_positions.length; u++){
       var start_hole = peg_positions[u];
       for ( let i in this.direction_s){
@@ -113,12 +110,16 @@ class Game extends Component {
         var a1 = {x:0,y:0};
         a1.x = direction.x + start_hole.x;
         a1.y = direction.y + start_hole.y;
-        if ( this.board[a1.x][a1.y] == 1) {
-          var a2 = {x:0,y:0};
-          a2.x = direction.x*2 + start_hole.x;
-          a2.y = direction.y*2 + start_hole.y;
-          if ( this.board[a2.x][a2.y] == 0){
-            return false;
+        if ( this.board[a1.x] != undefined) {
+          if ( this.board[a1.x][a1.y] == 1) {
+            var a2 = {x:0,y:0};
+            a2.x = direction.x*2 + start_hole.x;
+            a2.y = direction.y*2 + start_hole.y;
+            if ( this.board[a2.x] != undefined){
+              if ( this.board[a2.x][a2.y] == 0){
+                return false;
+              }
+            }
           }
         }
       }
@@ -126,7 +127,35 @@ class Game extends Component {
     return true;
   }
 
+  undo = () => {
+    console.log("Undoing")
+    var tstep = this.steps.pop()
+    if( tstep != undefined ){
+      this.board[tstep[0].x][tstep[0].y] = 1;
+      this.refers[tstep[0].x][tstep[0].y].current.setState({
+        val: 1,
+        is_selected: false,
+        is_highlighted: false,
+      });
+      this.whenSelected(tstep[0].x, tstep[0].y, true);
+      this.board[tstep[1].x][tstep[1].y] = 1;
+      this.refers[tstep[1].x][tstep[1].y].current.setState({
+        val: 1,
+        is_selected: false,
+        is_highlighted: false,
+      });
+      this.board[tstep[2].x][tstep[2].y] = 0;
+      this.refers[tstep[2].x][tstep[2].y].current.setState({
+        val: 0,
+        is_selected: false,
+        is_highlighted: true,
+      });
+      this.num_pegs_left++;
+    }
+  }
+
   whenhighPress = (a, b) => {
+    var tmp = new Array();
     // De select the previous one
     this.whenSelected(this.selected_pos.x, this.selected_pos.y, false);
 
@@ -164,6 +193,13 @@ class Game extends Component {
       this.props.set_opacity();
       this.navigation.navigate("Failure");
     }
+    tmp.push({ x: this.selected_pos.x, y: this.selected_pos.y})
+    tmp.push({ x: a+dx, y: b+dy})
+    tmp.push({ x: a, y: b})
+    console.log(tmp)
+    this.steps.push(tmp)
+    console.log("This is the steps variable outside of the game class")
+    console.log(this.steps)
   }
 
   whenSelected = (a, b, test ) => {
@@ -195,7 +231,7 @@ class Game extends Component {
       // Deselect it and unhighlight the moves
       this.refers[a][b].current.setState({ is_selected: false });
 
-      // Highlight possible moves
+      // Unhighlight possible moves
       for (let i in this.direction_s) {
         var direction = this.direction_s[i];
         var val = { x: direction.x + a, y: direction.y + b };
@@ -217,6 +253,7 @@ class Game extends Component {
   render() {
     return(
     <View style={styles.background}>
+        {/* <View style={{ flex: 5}} >{this.collist}</View> */}
         <View>{this.collist}</View>
     </View>
     )
@@ -226,7 +263,9 @@ class Game extends Component {
 const GameScreen = ({ navigation, route }) => {
   var times = 0;
   var npegs = difficulty+5;
-  const [game, setgame] = React.useState(newGame());
+  var ngame = newGame();
+  const [game, setgame] = React.useState(ngame[0]);
+  const [newref, setnewref] = React.useState(ngame[1]);
   const opacity = useSharedValue(0);
   opacity.value = withTiming(1, { duration: 2000, easing: Easing.ease });
 
@@ -234,11 +273,12 @@ const GameScreen = ({ navigation, route }) => {
   // For whenever the screen is showed
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      console.log(peg_positions)
       // if (times !== 0 && npegs == 0)
       if (times !== 0 && route.params.button === "restart")
       {
-        setgame(newGame());
+        var ngame = newGame();
+        setgame(ngame[0]);
+        setnewref(ngame[1]);
       }
       navigation.setParams({button: "none"})
       times++;
@@ -276,25 +316,10 @@ const GameScreen = ({ navigation, route }) => {
     const nnpegs = () => {
       npegs -= 1;
     }
-    // const peg_pos_push = (obj) => {
-    //   console.log("Pushing: ")
-    //   console.log(obj)
-    //   peg_positions.push(obj);
-    // }
-    // const peg_pos_pop = (obj) => {
-    //   // peg_positions.push(obj);
-    //   console.log("Poping: ")
-    //   console.log(obj)
-    //   for( var i = 0; i < peg_positions.length; i++){
-    //       if ( peg_positions[i].x === obj.x && peg_positions[i].y == obj.y) {
-    //           peg_positions.splice(i, 1);
-    //           i--;
-    //       }
-    //   }
-    //   console.log(peg_positions)
-    // }
+    var nref = React.createRef();
     var nkey = Math.random();
-    return <Game nnpegs={nnpegs} peg_positions={peg_positions} set_opacity={opctzero} key={nkey} navigation={navigation} route={route} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
+    // return <Game nnpegs={nnpegs} steps={steps} peg_positions={peg_positions} set_opacity={opctzero} key={nkey} navigation={navigation} route={route} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game>
+    return [ <Game nnpegs={nnpegs} ref={nref} peg_positions={peg_positions} set_opacity={opctzero} key={nkey} navigation={navigation} route={route} difficulty={difficulty} size={size} direction_s={direction_s} selected_pos={selected_pos}></Game> , nref ]
   }
 
   const style = useAnimatedStyle(() => ({
@@ -310,9 +335,36 @@ const GameScreen = ({ navigation, route }) => {
 
   return(
     <View style={{ position: "absolute", backgroundColor: "#282a36", top: 0, bottom: 0, left: 0, right: 0, alignItems: "center", justifyContent: "center"}} >
-      <Animated.View style={style} >
+      <View style={{ flex: 1, backgroundColor: "#282a36", padding: 0}}/>
+      <View style={{ flex: 1, margin: 10, alignItems: "center", justifyContent: "center"}}>
+        <Pressable
+          style={styles.playButton}
+          onPress={() => {
+            newref.current.undo();
+          }}
+          // onPress={() => navigation.navigate("GameScreen", {button: "start"})}
+        >
+          <Text style={{ padding: 20}}>
+            Undo
+          </Text>
+        </Pressable>
+        {/* Testing shit out */}
+      </View>
+      <Animated.View style={{ flex: 5 }} >
         {game}
       </Animated.View>
+      {/* This is going to be the undo button */}
+      <View style={{ flex: 1, margin: 10, alignItems: "center", justifyContent: "center"}}>
+        <Pressable
+          style={styles.playButton}
+          onPress={() => navigation.navigate("Pause")}
+        >
+          <Text style={{ padding: 20}}>
+            Pause
+          </Text>
+        </Pressable>
+        {/* Testing shit out */}
+      </View>
     </View>
   )
 }
@@ -331,7 +383,7 @@ const styles = StyleSheet.create({
     zIndex: 1
   },
   background: {
-    flex: 1,
+    // flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#282a36",
@@ -344,6 +396,15 @@ const styles = StyleSheet.create({
   },
   Row: {
     flexDirection: "row",
+  },
+  playButton: {
+    width: "50%",
+    height: 70,
+    marginBottom: 100,
+    borderRadius: 70 / 3,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff55",
   },
 });
 
